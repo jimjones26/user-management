@@ -72,7 +72,3 @@ public class User {
     public MFA getMfa() { return mfa; }
     public void setMfa(MFA mfa) { this.mfa = mfa; }
 }
-
-enum Status {
-    ACTIVE, INACTIVE, DELETED
-}

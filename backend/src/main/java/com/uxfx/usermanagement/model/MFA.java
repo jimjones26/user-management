@@ -38,7 +38,3 @@ public class MFA {
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean verified) { this.isVerified = verified; }
 }
-
-enum MFAMethod {
-    TOTP, SMS
-}
