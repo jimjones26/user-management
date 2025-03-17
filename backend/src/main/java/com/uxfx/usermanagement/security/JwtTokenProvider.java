@@ -1,113 +1,83 @@
 package com.uxfx.usermanagement.security;
 
+import com.uxfx.usermanagement.model.User;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
-    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
-
-    @Value("${app.jwt.secret}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwt.expiration}")
-    private int jwtExpirationInMs;
-    
-    private String secretKey;
+    @Value("${jwt.access.expiration}")
+    private long accessTokenExpiration;
 
-    public JwtTokenProvider() {
-    }
+    @Value("${jwt.refresh.expiration}")
+    private long refreshTokenExpiration;
 
-    @PostConstruct
-    protected void init() {
-        secretKey = Base64.getEncoder().encodeToString(jwtSecret.getBytes());
-    }
+    @Value("${jwt.temp.expiration}")
+    private long tempTokenExpiration;
 
-    private Key getSigningKey() {
-        byte[] keyBytes = secretKey.getBytes();
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    public String generateToken(Authentication authentication) {
-        return createToken(authentication.getName(), List.of());
-    }
-    
-    public String generateToken(UserDetails userDetails) {
-        return createToken(userDetails.getUsername(), 
-                userDetails.getAuthorities().stream()
-                        .map(authority -> authority.getAuthority())
-                        .collect(Collectors.toList()));
-    }
-    
-    public String createToken(String username, List<String> roles) {
-        Claims claims = Jwts.claims().setSubject(username);
-        claims.put("roles", roles);
-        
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
-
+    public String generateAccessToken(User user) {
         return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(getSigningKey())
+                .setSubject(user.getUsername())
+                .claim("userId", user.getUserId())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
 
-    public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-                
-        String username = claims.getSubject();
-        List<String> roles = claims.get("roles", List.class);
-        
-        return new UsernamePasswordAuthenticationToken(username, "", List.of());
+    public String generateRefreshToken(User user) {
+        return Jwts.builder()
+                .setSubject(user.getUsername())
+                .claim("userId", user.getUserId())
+                .claim("type", "refresh")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+    public String generateTempToken(User user) {
+        return Jwts.builder()
+                .setSubject(user.getUsername())
+                .claim("userId", user.getUserId())
+                .claim("type", "temp")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + tempTokenExpiration))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
     }
 
-    public boolean validateToken(String token) {
+    public Claims validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token);
-            return true;
-        } catch (SignatureException ex) {
-            logger.error("Invalid JWT signature");
-        } catch (MalformedJwtException ex) {
-            logger.error("Invalid JWT token");
-        } catch (ExpiredJwtException ex) {
-            logger.error("Expired JWT token");
-        } catch (UnsupportedJwtException ex) {
-            logger.error("Unsupported JWT token");
-        } catch (IllegalArgumentException ex) {
-            logger.error("JWT claims string is empty");
+            return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+        } catch (JwtException | IllegalArgumentException e) {
+            return null;
         }
-        return false;
+    }
+
+    public Claims validateTempToken(String token) {
+        Claims claims = validateToken(token);
+        if (claims != null && "temp".equals(claims.get("type"))) {
+            return claims;
+        }
+        return null;
+    }
+
+    public Claims validateRefreshToken(String token) {
+        Claims claims = validateToken(token);
+        if (claims != null && "refresh".equals(claims.get("type"))) {
+            return claims;
+        }
+        return null;
+    }
+
+    public Claims getClaimsFromToken(String token) {
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
     }
 }
