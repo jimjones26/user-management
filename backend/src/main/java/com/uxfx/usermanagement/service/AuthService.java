@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +20,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final RevokedTokenRepository revokedTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
@@ -28,6 +30,7 @@ public class AuthService {
     public AuthService(UserRepository userRepository,
                        EmailVerificationTokenRepository emailVerificationTokenRepository,
                        RevokedTokenRepository revokedTokenRepository,
+                       PasswordResetTokenRepository passwordResetTokenRepository,
                        PasswordEncoder passwordEncoder,
                        JwtTokenProvider jwtTokenProvider,
                        EmailService emailService,
@@ -35,6 +38,7 @@ public class AuthService {
         this.userRepository = userRepository;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.revokedTokenRepository = revokedTokenRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.emailService = emailService;
@@ -146,5 +150,42 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return jwtTokenProvider.generateAccessToken(user);
+    }
+
+    public void requestPasswordReset(String identifier) {
+        Optional<User> userOpt = userRepository.findByUsername(identifier);
+        if (!userOpt.isPresent()) {
+            userOpt = userRepository.findByEmail(identifier);
+        }
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (user.getStatus() == Status.ACTIVE) {
+                passwordResetTokenRepository.deleteByUserAndIsUsedFalse(user);
+                String token = UUID.randomUUID().toString();
+                PasswordResetToken resetToken = new PasswordResetToken(user, token);
+                passwordResetTokenRepository.save(resetToken);
+                emailService.sendPasswordResetEmail(user.getEmail(), token);
+            }
+        }
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+        if (resetToken.isUsed()) {
+            throw new RuntimeException("Token already used");
+        }
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token expired");
+        }
+        User user = resetToken.getUser();
+        if (user.getStatus() != Status.ACTIVE) {
+            throw new RuntimeException("Cannot reset password for this account");
+        }
+        String hashedPassword = passwordEncoder.encode(newPassword);
+        user.setPasswordHash(hashedPassword);
+        userRepository.save(user);
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
     }
 }
