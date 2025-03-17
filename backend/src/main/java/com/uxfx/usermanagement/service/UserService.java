@@ -125,6 +125,6 @@ public class UserService {
     }
 
     public UserDto convertToDto(User user) {
-        return new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getStatus());
+        return new UserDto(user.getUserId(), user.getUsername(), user.getEmail(), user.getStatus());
     }
 }
