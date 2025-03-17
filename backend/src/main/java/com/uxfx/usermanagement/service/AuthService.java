@@ -2,7 +2,6 @@ package com.uxfx.usermanagement.service;
 
 import com.uxfx.usermanagement.dto.*;
 import com.uxfx.usermanagement.model.*;
-import com.uxfx.usermanagement.model.Status;
 import com.uxfx.usermanagement.repository.*;
 import com.uxfx.usermanagement.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
@@ -153,7 +152,7 @@ public class AuthService {
     }
 
     public void requestPasswordReset(String identifier) {
-         User userOpt = userRepository.findByUsername(identifier);
+         Optional<User> userOpt = userRepository.findByUsername(identifier);
         if (!userOpt.isPresent()) {
             userOpt = userRepository.findByEmail(identifier);
         }
