@@ -108,7 +108,7 @@ public class AuthService {
         }
         boolean isValid = false;
         if (mfa.getMethod() == MFAMethod.TOTP) {
-            isValid = totpService.verifyCode(mfa.getSecret(), request.getCode());
+            isValid = totpService.validateTOTP(mfa.getSecret(), request.getCode());
         } else if (mfa.getMethod() == MFAMethod.SMS) {
             // SMS verification logic would go here (assumed implemented elsewhere)
             throw new RuntimeException("SMS MFA not implemented");
