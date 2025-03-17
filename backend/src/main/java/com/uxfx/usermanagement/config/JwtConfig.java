@@ -6,10 +6,10 @@ import org.springframework.validation.annotation.Validated;
 
 /**
  * Configuration properties for JWT authentication.
- * This class binds properties with the 'jwt' prefix from application.properties.
+ * This class binds properties with the 'app.jwt' prefix from application.properties.
  */
 @Configuration
-@ConfigurationProperties(prefix = "jwt")
+@ConfigurationProperties(prefix = "app.jwt")
 @Validated
 public class JwtConfig {
     
