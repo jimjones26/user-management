@@ -153,7 +153,7 @@ public class AuthService {
     }
 
     public void requestPasswordReset(String identifier) {
-        Optional<User> userOpt = userRepository.findByUsername(identifier);
+         User userOpt = userRepository.findByUsername(identifier);
         if (!userOpt.isPresent()) {
             userOpt = userRepository.findByEmail(identifier);
         }
