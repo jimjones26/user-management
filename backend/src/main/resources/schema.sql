@@ -1,7 +1,19 @@
 -- Create custom enum types used across tables
-CREATE TYPE user_status AS ENUM ('active', 'inactive', 'deleted');
-CREATE TYPE mfa_method AS ENUM ('totp', 'sms');
-CREATE TYPE custom_field_type AS ENUM ('string', 'number', 'date');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_status') THEN
+        CREATE TYPE user_status AS ENUM ('active', 'inactive', 'deleted');
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'mfa_method') THEN
+        CREATE TYPE mfa_method AS ENUM ('totp', 'sms');
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'custom_field_type') THEN
+        CREATE TYPE custom_field_type AS ENUM ('string', 'number', 'date');
+    END IF;
+END
+$$;
 
 -- Create table for roles
 CREATE TABLE roles (
