@@ -4,8 +4,8 @@ services:
     container_name: postgres_db
     environment:
       POSTGRES_DB: user_management
-      POSTGRES_USER: jjones_admin
-      POSTGRES_PASSWORD: admin_password
+      POSTGRES_USER: "jjones"
+      POSTGRES_PASSWORD: "password"
     ports:
       - "5433:5432"
     volumes:
