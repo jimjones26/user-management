@@ -2,12 +2,25 @@ package com.uxfx.usermanagement.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.annotation.Validated;
 
+/**
+ * Configuration properties for JWT authentication.
+ * This class binds properties with the 'jwt' prefix from application.properties.
+ */
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
+@Validated
 public class JwtConfig {
     
+    /**
+     * Secret key used for signing JWT tokens
+     */
     private String secret;
+
+    /**
+     * Token expiration time in milliseconds
+     */
     private long expiration;
     
     // Getters and setters
