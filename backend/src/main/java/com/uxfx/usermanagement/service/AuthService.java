@@ -5,7 +5,6 @@ import com.uxfx.usermanagement.model.*;
 import com.uxfx.usermanagement.repository.*;
 import com.uxfx.usermanagement.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,6 @@ public class AuthService {
     private final EmailService emailService;
     private final TOTPService totpService;
 
-    @Autowired
     public AuthService(UserRepository userRepository,
                        EmailVerificationTokenRepository emailVerificationTokenRepository,
                        RevokedTokenRepository revokedTokenRepository,
