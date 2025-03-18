@@ -1,6 +1,7 @@
 package com.uxfx.usermanagement.service;
 
 import com.uxfx.usermanagement.dto.*;
+import com.uxfx.usermanagement.mapper.UserMapper;
 import com.uxfx.usermanagement.model.*;
 import com.uxfx.usermanagement.model.UserStatus;
 import com.uxfx.usermanagement.repository.*;
@@ -32,6 +33,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
     private final TOTPService totpService;
+    private final UserMapper userMapper;
 
     public AuthService(UserRepository userRepository,
                        EmailVerificationTokenRepository emailVerificationTokenRepository,
@@ -40,7 +42,8 @@ public class AuthService {
                        PasswordEncoder passwordEncoder,
                        JwtTokenProvider jwtTokenProvider,
                        EmailService emailService,
-                       TOTPService totpService) {
+                       TOTPService totpService,
+                       UserMapper userMapper) {
         this.userRepository = userRepository;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.revokedTokenRepository = revokedTokenRepository;
@@ -49,6 +52,7 @@ public class AuthService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.emailService = emailService;
         this.totpService = totpService;
+        this.userMapper = userMapper;
     }
 
     public void register(RegisterRequest request) {
@@ -274,9 +278,9 @@ public class AuthService {
     /**
      * Gets the current user based on the provided token
      * @param token the JWT token
-     * @return the user associated with the token
+     * @return the user DTO associated with the token
      */
-    public User getCurrentUser(String token) {
+    public UserDto getCurrentUser(String token) {
         // Validate token
         Claims claims = jwtTokenProvider.validateToken(token);
         if (claims == null) {
@@ -285,7 +289,9 @@ public class AuthService {
 
         // Get user from database
         String username = claims.getSubject();
-        return userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+                
+        return userMapper.toDto(user);
     }
 }

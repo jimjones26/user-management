@@ -10,6 +10,7 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(unique = true, nullable = false)
@@ -25,18 +26,29 @@ public class User {
     @Column(nullable = false)
     private UserStatus status = UserStatus.PENDING;
 
-    @Column(nullable = false)
-    private boolean emailVerified;
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @Column(name = "mfa_enabled", nullable = false)
+    private boolean mfaEnabled = false;
 
     // Notification preference fields
-    @Column(nullable = false)
+    @Column(name = "email_notifications", nullable = false)
     private boolean emailNotifications = true;
 
-    @Column(nullable = false)
+    @Column(name = "in_app_notifications", nullable = false)
     private boolean inAppNotifications = true;
+    
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private MFA mfa;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+    
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     @ManyToMany
@@ -47,8 +59,17 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private MFA mfa;
+    // Constructors
+    public User() {}
+
+    public User(String username, String email, String passwordHash) {
+        this.username = username;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.status = UserStatus.PENDING;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
     // Getters and Setters
     public Long getUserId() { return userId; }
@@ -63,6 +84,8 @@ public class User {
     public void setStatus(UserStatus status) { this.status = status; }
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+    public boolean isMfaEnabled() { return mfaEnabled; }
+    public void setMfaEnabled(boolean mfaEnabled) { this.mfaEnabled = mfaEnabled; }
     public boolean isEmailNotifications() { return emailNotifications; }
     public void setEmailNotifications(boolean emailNotifications) { this.emailNotifications = emailNotifications; }
     public boolean isInAppNotifications() { return inAppNotifications; }
@@ -75,6 +98,21 @@ public class User {
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
-    public MFA getMfa() { return mfa; }
-    public void setMfa(MFA mfa) { this.mfa = mfa; }
+    
+    public MFA getMfa() {
+        return mfa;
+    }
+
+    public void setMfa(MFA mfa) {
+        this.mfa = mfa;
+        if (mfa != null) {
+            mfa.setUser(this);
+        }
+    }
+
+    // Pre-update hook to update the updatedAt timestamp
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
