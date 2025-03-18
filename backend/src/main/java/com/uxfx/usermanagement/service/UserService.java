@@ -1,33 +1,39 @@
 package com.uxfx.usermanagement.service;
 
-import com.uxfx.usermanagement.dto.CreateUserRequest;
-import com.uxfx.usermanagement.dto.UpdateUserRequest;
-import com.uxfx.usermanagement.dto.UserDto;
-import com.uxfx.usermanagement.model.Role;
-import com.uxfx.usermanagement.model.Status;
-import com.uxfx.usermanagement.model.User;
-import com.uxfx.usermanagement.repository.RoleRepository;
-import com.uxfx.usermanagement.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.uxfx.usermanagement.dto.*;
+import com.uxfx.usermanagement.model.*;
+import com.uxfx.usermanagement.repository.*;
+import com.opencsv.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.*;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final UserCustomFieldValueRepository userCustomFieldValueRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public UserService(UserRepository userRepository,
+                      RoleRepository roleRepository,
+                      AuditLogRepository auditLogRepository,
+                      UserCustomFieldValueRepository userCustomFieldValueRepository,
+                      PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.userCustomFieldValueRepository = userCustomFieldValueRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public Page<UserDto> getAllUsers(String status, Pageable pageable) {
         Page<User> users;
@@ -126,5 +132,128 @@ public class UserService {
 
     public UserDto convertToDto(User user) {
         return new UserDto(user.getUserId(), user.getUsername(), user.getEmail(), user.getStatus());
+    }
+
+    public UserDataDto getUserData(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        List<AuditLog> auditLogs = auditLogRepository.findByUserId(userId);
+        List<UserCustomFieldValue> customFieldValues = userCustomFieldValueRepository.findByUserId(userId);
+
+        UserDto userDto = convertToDto(user);
+        List<AuditLogDto> auditLogDtos = auditLogs.stream()
+                .map(this::convertToAuditLogDto)
+                .collect(Collectors.toList());
+        List<UserCustomFieldValueDto> customFieldValueDtos = customFieldValues.stream()
+                .map(this::convertToUserCustomFieldValueDto)
+                .collect(Collectors.toList());
+
+        UserDataDto userDataDto = new UserDataDto();
+        userDataDto.setUser(userDto);
+        userDataDto.setAuditLogs(auditLogDtos);
+        userDataDto.setCustomFieldValues(customFieldValueDtos);
+
+        return userDataDto;
+    }
+
+    public NotificationPreferencesDto getNotificationPreferences(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        NotificationPreferencesDto dto = new NotificationPreferencesDto();
+        dto.setEmailNotifications(user.isEmailNotifications());
+        dto.setInAppNotifications(user.isInAppNotifications());
+        return dto;
+    }
+
+    public void updateNotificationPreferences(Long userId, UpdateNotificationPreferencesRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        user.setEmailNotifications(request.isEmailNotifications());
+        user.setInAppNotifications(request.isInAppNotifications());
+        userRepository.save(user);
+    }
+
+    public void importUsers(MultipartFile file) {
+        try (Reader reader = new InputStreamReader(file.getInputStream());
+             CSVReader csvReader = new CSVReaderBuilder(reader)
+                     .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
+                     .withSkipLines(1)
+                     .build()) {
+
+            String[] line;
+            while ((line = csvReader.readNext()) != null) {
+                String username = line[0];
+                String email = line[1];
+                String password = line[2];
+                String status = line[3];
+                String rolesStr = line[4];
+                List<String> roles = Arrays.asList(rolesStr.split(","));
+
+                User user = new User();
+                user.setUsername(username);
+                user.setEmail(email);
+                user.setPasswordHash(passwordEncoder.encode(password));
+                user.setStatus(Status.valueOf(status.toUpperCase()));
+                user.setEmailVerified(false);
+                user.setCreatedAt(LocalDateTime.now());
+                user.setUpdatedAt(LocalDateTime.now());
+
+                Set<Role> roleSet = roleRepository.findByNameIn(roles).stream().collect(Collectors.toSet());
+                user.setRoles(roleSet);
+
+                userRepository.save(user);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to import users: " + e.getMessage(), e);
+        }
+    }
+
+    public byte[] exportUsers() {
+        List<User> users = userRepository.findAll();
+        try (StringWriter writer = new StringWriter();
+             CSVWriter csvWriter = new CSVWriter(writer)) {
+
+            csvWriter.writeNext(new String[]{"username", "email", "status", "roles"});
+
+            for (User user : users) {
+                String roles = user.getRoles().stream()
+                        .map(Role::getName)
+                        .collect(Collectors.joining(","));
+
+                csvWriter.writeNext(new String[]{
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getStatus().name(),
+                        roles
+                });
+            }
+
+            return writer.toString().getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to export users: " + e.getMessage(), e);
+        }
+    }
+
+    private AuditLogDto convertToAuditLogDto(AuditLog auditLog) {
+        AuditLogDto dto = new AuditLogDto();
+        dto.setLogId(auditLog.getLogId());
+        dto.setAction(auditLog.getAction());
+        dto.setTimestamp(auditLog.getTimestamp());
+        dto.setDetails(auditLog.getDetails());
+        return dto;
+    }
+
+    private UserCustomFieldValueDto convertToUserCustomFieldValueDto(UserCustomFieldValue value) {
+        UserCustomFieldValueDto dto = new UserCustomFieldValueDto();
+        dto.setValueId(value.getValueId());
+        dto.setFieldId(value.getField().getFieldId());
+        dto.setFieldName(value.getField().getName());
+        dto.setValueText(value.getValueText());
+        dto.setValueNumber(value.getValueNumber());
+        dto.setValueDate(value.getValueDate());
+        return dto;
     }
 }

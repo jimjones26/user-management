@@ -185,4 +185,51 @@ public class AuthService {
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
     }
+
+    /**
+     * Resends the verification email to the user identified by email or username
+     * @param identifier email or username of the user
+     */
+    public void resendVerificationEmail(String identifier) {
+        User user = userRepository.findByEmail(identifier)
+                .orElseGet(() -> userRepository.findByUsername(identifier)
+                        .orElseThrow(() -> new RuntimeException("User not found with identifier: " + identifier)));
+
+        if (user.isEmailVerified()) {
+            throw new RuntimeException("Email already verified");
+        }
+
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = new EmailVerificationToken();
+        verificationToken.setUser(user);
+        verificationToken.setToken(token);
+        verificationToken.setCreatedAt(new Date());
+        verificationToken.setExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)); // 24 hours
+        verificationToken.setUsed(false);
+        emailVerificationTokenRepository.save(verificationToken);
+
+        String verificationLink = "http://localhost:8080/email-verification/verify?token=" + token;
+        emailService.sendVerificationEmail(user.getEmail(), verificationLink);
+    }
+
+    /**
+     * Verifies the user's email using the provided token
+     * @param token the verification token
+     */
+    public void verifyEmail(String token) {
+        EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if (verificationToken.getExpiresAt().before(new Date()) || verificationToken.isUsed()) {
+            throw new RuntimeException("Token expired or already used");
+        }
+
+        User user = verificationToken.getUser();
+        user.setEmailVerified(true);
+        user.setStatus(Status.ACTIVE);
+        userRepository.save(user);
+
+        verificationToken.setUsed(true);
+        emailVerificationTokenRepository.save(verificationToken);
+    }
 }
