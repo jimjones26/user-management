@@ -59,7 +59,7 @@ public class MFAService {
     public List<String> getBackupCodes(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        List<BackupCode> backupCodes = backupCodeRepository.findByUserIdAndIsUsedFalse(userId);
+        List<BackupCode> backupCodes = backupCodeRepository.findByUserUserIdAndUsedFalse(userId);
         return backupCodes.stream().map(BackupCode::getCode).collect(Collectors.toList());
     }
     
