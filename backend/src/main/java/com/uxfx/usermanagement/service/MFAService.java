@@ -62,6 +62,10 @@ public class MFAService {
         List<BackupCode> backupCodes = backupCodeRepository.findByUserIdAndIsUsedFalse(userId);
         return backupCodes.stream().map(BackupCode::getCode).collect(Collectors.toList());
     }
+    
+    public java.util.Optional<MFA> getMFAForUser(Long userId) {
+        return mfaRepository.findByUserUserId(userId);
+    }
 
     private List<String> generateBackupCodes(User user) {
         List<String> codes = new java.util.ArrayList<>();
