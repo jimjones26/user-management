@@ -1,8 +1,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Button, Input } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { Button, Input, Typography } from '@mui/material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -11,8 +10,6 @@ const validationSchema = Yup.object({
 });
 
 function UserImportForm() {
-  const dispatch = useDispatch();
-
   const formik = useFormik({
     initialValues: { file: null },
     validationSchema,
@@ -40,7 +37,7 @@ function UserImportForm() {
         error={formik.touched.file && Boolean(formik.errors.file)}
       />
       {formik.touched.file && formik.errors.file && <Typography color="error">{formik.errors.file}</Typography>}
-      <Button type="submit" variant="contained" color="primary">
+      <Button type="submit" variant="contained">
         Import
       </Button>
     </form>
