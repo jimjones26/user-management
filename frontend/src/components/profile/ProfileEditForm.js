@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { TextField, Button } from '@material-ui/core';
+import { TextField, Button } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { updateUser } from '../../store/actions/userActions';
 

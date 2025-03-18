@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Button, Input } from '@material-ui/core';
+import { Button, Input } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
 import { toast } from 'react-toastify';

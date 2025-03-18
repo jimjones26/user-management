@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography } from '@material-ui/core';
+import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setupMFA, verifyMFA } from '../../store/actions/authActions';
 import QRCode from 'qrcode.react';
