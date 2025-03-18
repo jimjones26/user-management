@@ -139,7 +139,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-        List<AuditLog> auditLogs = auditLogRepository.findByUserId(userId);
+        List<AuditLog> auditLogs = auditLogRepository.findByUserUserId(userId);
         List<UserCustomFieldValue> customFieldValues = userCustomFieldValueRepository.findByUserId(userId);
 
         UserDto userDto = convertToDto(user);
