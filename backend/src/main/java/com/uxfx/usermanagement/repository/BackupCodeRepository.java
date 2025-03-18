@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface BackupCodeRepository extends JpaRepository<BackupCode, Long>, JpaSpecificationExecutor<BackupCode> {
-    List<BackupCode> findByUserUserIdAndUsedFalse(Long userId);
+    List<BackupCode> findByUserUserIdAndIsUsedFalse(Long userId);
 }
