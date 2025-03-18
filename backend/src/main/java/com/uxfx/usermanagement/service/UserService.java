@@ -2,6 +2,7 @@ package com.uxfx.usermanagement.service;
 
 import com.uxfx.usermanagement.dto.*;
 import com.uxfx.usermanagement.model.*;
+import com.uxfx.usermanagement.model.UserStatus;
 import com.uxfx.usermanagement.repository.*;
 import com.opencsv.*;
 import com.opencsv.exceptions.CsvValidationException;
@@ -39,7 +40,7 @@ public class UserService {
     public Page<UserDto> getAllUsers(String status, Pageable pageable) {
         Page<User> users;
         if (status != null && !status.isEmpty()) {
-            Status enumStatus = Status.valueOf(status.toUpperCase());
+            UserStatus enumStatus = UserStatus.valueOf(status.toUpperCase());
             users = userRepository.findByStatus(enumStatus, pageable);
         } else {
             users = userRepository.findAll(pageable);
@@ -59,7 +60,7 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setStatus(request.getStatus() != null ? request.getStatus() : Status.ACTIVE);
+        user.setStatus(request.getStatus() != null ? request.getStatus() : UserStatus.ACTIVE);
 
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
             Set<Role> roles = roleRepository.findByNameIn(request.getRoles());
@@ -106,12 +107,12 @@ public class UserService {
     public void softDeleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setStatus(Status.DELETED);
+        user.setStatus(UserStatus.DELETED);
         user.setDeletedAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
-    public UserDto updateUserStatus(Long userId, Status status) {
+    public UserDto updateUserStatus(Long userId, UserStatus status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setStatus(status);
@@ -197,7 +198,7 @@ public class UserService {
                 user.setUsername(username);
                 user.setEmail(email);
                 user.setPasswordHash(passwordEncoder.encode(password));
-                user.setStatus(Status.valueOf(status.toUpperCase()));
+                user.setStatus(UserStatus.valueOf(status.toUpperCase()));
                 user.setEmailVerified(false);
                 user.setCreatedAt(LocalDateTime.now());
                 user.setUpdatedAt(LocalDateTime.now());

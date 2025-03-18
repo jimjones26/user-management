@@ -1,6 +1,6 @@
 package com.uxfx.usermanagement.dto;
 
-import com.uxfx.usermanagement.model.Status;
+import com.uxfx.usermanagement.model.UserStatus;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
@@ -11,13 +11,13 @@ public class CreateUserRequest {
     private String username;
 
     @NotBlank(message = "Email is required")
-    @Email(message = "Email must be valid")
+    @Email(message = "Invalid email format")
     private String email;
 
     @NotBlank(message = "Password is required")
     private String password;
 
-    private Status status;
+    private UserStatus status;
     private Set<String> roles;
 
     // Getters and Setters
@@ -27,8 +27,8 @@ public class CreateUserRequest {
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
+    public UserStatus getStatus() { return status; }
+    public void setStatus(UserStatus status) { this.status = status; }
     public Set<String> getRoles() { return roles; }
     public void setRoles(Set<String> roles) { this.roles = roles; }
 }
