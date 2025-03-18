@@ -4,6 +4,7 @@ import com.uxfx.usermanagement.dto.*;
 import com.uxfx.usermanagement.model.*;
 import com.uxfx.usermanagement.repository.*;
 import com.opencsv.*;
+import com.opencsv.exceptions.CsvValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -190,7 +191,7 @@ public class UserService {
                 String password = line[2];
                 String status = line[3];
                 String rolesStr = line[4];
-                List<String> roles = Arrays.asList(rolesStr.split(","));
+                Set<String> roles = new HashSet<>(Arrays.asList(rolesStr.split(",")));
 
                 User user = new User();
                 user.setUsername(username);
@@ -201,12 +202,12 @@ public class UserService {
                 user.setCreatedAt(LocalDateTime.now());
                 user.setUpdatedAt(LocalDateTime.now());
 
-                Set<Role> roleSet = roleRepository.findByNameIn(roles).stream().collect(Collectors.toSet());
+                Set<Role> roleSet = roleRepository.findByNameIn(roles);
                 user.setRoles(roleSet);
 
                 userRepository.save(user);
             }
-        } catch (IOException e) {
+        } catch (IOException | CsvValidationException e) {
             throw new RuntimeException("Failed to import users: " + e.getMessage(), e);
         }
     }
