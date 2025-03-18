@@ -1,5 +1,6 @@
 package com.uxfx.usermanagement.controller;
 
+import com.uxfx.usermanagement.dto.UserDto;
 import com.uxfx.usermanagement.dto.*;
 import com.uxfx.usermanagement.service.AuthService;
 import javax.validation.Valid;
@@ -9,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @RestController
 @RequestMapping("/auth")
@@ -22,12 +22,12 @@ public class AuthController {
     }
 
     @GetMapping("/users/me")
-    public ResponseEntity<UserDTO> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<UserDto> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String token = authHeader.substring(7);
-        UserDTO user = authService.getCurrentUser(token);
+        UserDto user = authService.getCurrentUser(token);
         return ResponseEntity.ok(user);
     }
 
