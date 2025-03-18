@@ -6,6 +6,9 @@ import com.uxfx.usermanagement.model.UserStatus;
 import com.uxfx.usermanagement.repository.*;
 import com.uxfx.usermanagement.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,11 @@ import java.util.UUID;
 
 @Service
 public class AuthService {
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+    
+    @Value("${app.email.verification.enabled:true}")
+    private boolean emailVerificationEnabled;
+    
     private final UserRepository userRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final RevokedTokenRepository revokedTokenRepository;
@@ -55,23 +63,39 @@ public class AuthService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setStatus(UserStatus.PENDING);
-        user.setEmailVerified(false);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
+        
+        // If email verification is disabled, set user as verified and active
+        if (!emailVerificationEnabled) {
+            user.setEmailVerified(true);
+            user.setStatus(UserStatus.ACTIVE);
+        } else {
+            user.setEmailVerified(false);
+            user.setStatus(UserStatus.PENDING);
+        }
+        
         userRepository.save(user);
 
-        String token = UUID.randomUUID().toString();
-        EmailVerificationToken verificationToken = new EmailVerificationToken();
-        verificationToken.setUser(user);
-        verificationToken.setToken(token);
-        verificationToken.setCreatedAt(new Date());
-        verificationToken.setExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)); // 24 hours
-        verificationToken.setUsed(false);
-        emailVerificationTokenRepository.save(verificationToken);
+        // Only send verification email if enabled
+        if (emailVerificationEnabled) {
+            try {
+                String token = UUID.randomUUID().toString();
+                EmailVerificationToken verificationToken = new EmailVerificationToken();
+                verificationToken.setUser(user);
+                verificationToken.setToken(token);
+                verificationToken.setCreatedAt(new Date());
+                verificationToken.setExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)); // 24 hours
+                verificationToken.setUsed(false);
+                emailVerificationTokenRepository.save(verificationToken);
 
-        String verificationLink = "http://localhost:8080/email-verification/verify?token=" + token;
-        emailService.sendVerificationEmail(user.getEmail(), verificationLink);
+                String verificationLink = "http://localhost:8080/email-verification/verify?token=" + token;
+                emailService.sendVerificationEmail(user.getEmail(), verificationLink);
+            } catch (Exception e) {
+                // Log the error but don't fail the registration
+                logger.error("Failed to send verification email", e);
+            }
+        }
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -83,7 +107,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid password");
         }
-        if (!user.isEmailVerified()) {
+        if (emailVerificationEnabled && !user.isEmailVerified()) {
             throw new RuntimeException("Email not verified");
         }
         if (user.getMfa() != null && user.getMfa().isVerified()) {
@@ -192,6 +216,10 @@ public class AuthService {
      * @param identifier email or username of the user
      */
     public void resendVerificationEmail(String identifier) {
+        if (!emailVerificationEnabled) {
+            throw new RuntimeException("Email verification is disabled");
+        }
+        
         User user = userRepository.findByEmail(identifier)
                 .orElseGet(() -> userRepository.findByUsername(identifier)
                         .orElseThrow(() -> new RuntimeException("User not found with identifier: " + identifier)));
@@ -200,17 +228,22 @@ public class AuthService {
             throw new RuntimeException("Email already verified");
         }
 
-        String token = UUID.randomUUID().toString();
-        EmailVerificationToken verificationToken = new EmailVerificationToken();
-        verificationToken.setUser(user);
-        verificationToken.setToken(token);
-        verificationToken.setCreatedAt(new Date());
-        verificationToken.setExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)); // 24 hours
-        verificationToken.setUsed(false);
-        emailVerificationTokenRepository.save(verificationToken);
+        try {
+            String token = UUID.randomUUID().toString();
+            EmailVerificationToken verificationToken = new EmailVerificationToken();
+            verificationToken.setUser(user);
+            verificationToken.setToken(token);
+            verificationToken.setCreatedAt(new Date());
+            verificationToken.setExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)); // 24 hours
+            verificationToken.setUsed(false);
+            emailVerificationTokenRepository.save(verificationToken);
 
-        String verificationLink = "http://localhost:8080/email-verification/verify?token=" + token;
-        emailService.sendVerificationEmail(user.getEmail(), verificationLink);
+            String verificationLink = "http://localhost:8080/email-verification/verify?token=" + token;
+            emailService.sendVerificationEmail(user.getEmail(), verificationLink);
+        } catch (Exception e) {
+            logger.error("Failed to resend verification email", e);
+            throw new RuntimeException("Failed to send verification email");
+        }
     }
 
     /**
@@ -218,6 +251,10 @@ public class AuthService {
      * @param token the verification token
      */
     public void verifyEmail(String token) {
+        if (!emailVerificationEnabled) {
+            throw new RuntimeException("Email verification is disabled");
+        }
+        
         EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
