@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { TextField, Button } from '@material-ui/core';
+import { TextField, Button, Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { verifyMFA } from '../../store/actions/authActions';
 import { useNavigate } from 'react-router-dom';
@@ -30,7 +30,7 @@ function MFAVerificationForm() {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Box component="form" onSubmit={formik.handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <TextField
         name="code"
         label="Verification Code"
@@ -40,10 +40,10 @@ function MFAVerificationForm() {
         error={formik.touched.code && Boolean(formik.errors.code)}
         helperText={formik.touched.code && formik.errors.code}
       />
-      <Button type="submit" variant="contained" color="primary">
+      <Button type="submit" variant="contained">
         Verify
       </Button>
-    </form>
+    </Box>
   );
 }
 

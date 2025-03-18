@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Button } from '@material-ui/core';
+import { Checkbox, FormControlLabel, Button, Box } from '@mui/material';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -42,7 +42,7 @@ function NotificationPreferencesForm() {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Box component="form" onSubmit={formik.handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <FormControlLabel
         control={
           <Checkbox
@@ -63,10 +63,10 @@ function NotificationPreferencesForm() {
         }
         label="SMS Notifications"
       />
-      <Button type="submit" variant="contained" color="primary">
+      <Button type="submit" variant="contained">
         Save
       </Button>
-    </form>
+    </Box>
   );
 }
 

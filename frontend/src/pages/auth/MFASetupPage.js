@@ -1,15 +1,15 @@
 import React from 'react';
-import { Typography } from '@material-ui/core';
+import { Typography, Box } from '@mui/material';
 import MFASetupForm from '../../components/auth/MFASetupForm';
 
 function MFASetupPage() {
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
+    <Box sx={{ padding: 3, maxWidth: '400px', margin: '0 auto' }}>
       <Typography variant="h4" gutterBottom>
         Set Up MFA
       </Typography>
       <MFASetupForm />
-    </div>
+    </Box>
   );
 }
 
