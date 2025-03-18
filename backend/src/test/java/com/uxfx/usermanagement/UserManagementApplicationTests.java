@@ -8,7 +8,7 @@ import com.uxfx.usermanagement.config.TestConfig;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestConfig.class)
+@Import({TestConfig.class})
 class UserManagementApplicationTests {
 
     @Test
