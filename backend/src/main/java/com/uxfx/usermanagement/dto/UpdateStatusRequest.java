@@ -1,13 +1,13 @@
 package com.uxfx.usermanagement.dto;
 
 import javax.validation.constraints.NotNull;
-import com.uxfx.usermanagement.model.Status;
+import com.uxfx.usermanagement.model.UserStatus;
 
 public class UpdateStatusRequest {
     @NotNull(message = "Status is required")
-    private Status status;
+    private UserStatus status;
 
     // Getters and Setters
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
+    public UserStatus getStatus() { return status; }
+    public void setStatus(UserStatus status) { this.status = status; }
 }
