@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import store from './store';
+import store from './store/index'
 import NavigationBar from './components/shared/NavigationBar';
 import Footer from './components/shared/Footer';
 import ErrorBoundary from './components/shared/ErrorBoundary';
