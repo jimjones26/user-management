@@ -5,10 +5,13 @@ import com.uxfx.usermanagement.service.AuthService;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
@@ -17,6 +20,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+        logger.info("Registration request received for user: {}", request.getEmail());
         authService.register(request);
         return ResponseEntity.ok("Registration successful. Please check your email to verify.");
     }
