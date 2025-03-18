@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import UserEditForm from '../../components/admin/UserEditForm';
 import { useParams } from 'react-router-dom';
 

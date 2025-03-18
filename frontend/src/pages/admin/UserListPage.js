@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Table, TableBody, TableCell, TableHead, TableRow, Pagination, Typography } from '@material-ui/core';
+import { Table, TableBody, TableCell, TableHead, TableRow, Pagination, Typography } from '@mui/material';
 import { fetchUsers } from '../../store/actions/userActions';
 
 function UserListPage() {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Card, CardContent } from '@material-ui/core';
+import { Typography, Card, CardContent } from '@mui/material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 

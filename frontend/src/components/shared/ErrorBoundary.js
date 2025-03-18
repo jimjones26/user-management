@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 
 class ErrorBoundary extends Component {
   state = { hasError: false };

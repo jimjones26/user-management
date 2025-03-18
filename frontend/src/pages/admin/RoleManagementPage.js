@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Button } from '@material-ui/core';
+import { Typography, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import RoleList from '../../components/admin/RoleList';
 

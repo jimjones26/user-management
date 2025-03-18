@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import PasswordResetForm from '../../components/auth/PasswordResetForm';
 import { useSearchParams } from 'react-router-dom';
 

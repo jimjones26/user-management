@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Typography, Card, CardContent, Button } from '@material-ui/core';
+import { Typography, Card, CardContent, Button } from '@mui/material';
 import ProfileEditForm from '../../components/profile/ProfileEditForm';
 
 function ProfilePage() {
