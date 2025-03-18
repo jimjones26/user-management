@@ -1,9 +1,10 @@
-package com.uxfx.usermanagement.service;
+package com.uxfx.usermanagement.service.impl;
 
 import com.uxfx.usermanagement.dto.*;
 import com.uxfx.usermanagement.exception.ResourceNotFoundException;
 import com.uxfx.usermanagement.model.Permission;
 import com.uxfx.usermanagement.repository.PermissionRepository;
+import com.uxfx.usermanagement.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
