@@ -7,7 +7,7 @@ const initialState = {
   mfaSetup: false,
   backupCodes: [],
   totpSecret: null,
-  mfaVerified: false,
+  mfaVerified: false
 };
 
 export default function authReducer(state = initialState, action) {
@@ -15,20 +15,55 @@ export default function authReducer(state = initialState, action) {
     case 'REGISTER_REQUEST':
     case 'LOGIN_REQUEST':
     case 'MFA_SETUP_REQUEST':
-      return { ...state, loading: true, error: null };
+      return {
+        ...state,
+        loading: true,
+        error: null
+      };
+
     case 'REGISTER_SUCCESS':
     case 'LOGIN_SUCCESS':
-      return { ...state, loading: false, user: action.payload.user, token: action.payload.token, isAuthenticated: true };
+      return {
+        ...state,
+        loading: false,
+        user: action.payload.user,
+        token: action.payload.token,
+        isAuthenticated: true,
+        error: null
+      };
+
     case 'REGISTER_FAILURE':
     case 'LOGIN_FAILURE':
     case 'MFA_SETUP_FAILURE':
-      return { ...state, loading: false, error: action.payload };
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+        isAuthenticated: false
+      };
+
     case 'MFA_SETUP_SUCCESS':
-      return { ...state, loading: false, mfaSetup: true, backupCodes: action.payload.backupCodes, totpSecret: action.payload.totpSecret || null };
+      return {
+        ...state,
+        loading: false,
+        mfaSetup: true,
+        backupCodes: action.payload.backupCodes,
+        totpSecret: action.payload.totpSecret || null,
+        error: null
+      };
+
     case 'MFA_VERIFY_SUCCESS':
-      return { ...state, mfaVerified: true };
+      return {
+        ...state,
+        mfaVerified: true,
+        error: null
+      };
+
     case 'LOGOUT':
-      return { ...state, user: null, token: null, isAuthenticated: false, mfaSetup: false, backupCodes: [], totpSecret: null, mfaVerified: false };
+      return {
+        ...initialState
+      };
+
     default:
       return state;
   }
