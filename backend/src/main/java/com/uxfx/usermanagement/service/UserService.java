@@ -140,7 +140,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
         List<AuditLog> auditLogs = auditLogRepository.findByUserUserId(userId);
-        List<UserCustomFieldValue> customFieldValues = userCustomFieldValueRepository.findByUserId(userId);
+        List<UserCustomFieldValue> customFieldValues = userCustomFieldValueRepository.findByUserUserId(userId);
 
         UserDto userDto = convertToDto(user);
         List<AuditLogDto> auditLogDtos = auditLogs.stream()

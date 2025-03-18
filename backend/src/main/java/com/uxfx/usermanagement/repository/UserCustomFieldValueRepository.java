@@ -10,5 +10,4 @@ import java.util.List;
 @Repository
 public interface UserCustomFieldValueRepository extends JpaRepository<UserCustomFieldValue, Long>, JpaSpecificationExecutor<UserCustomFieldValue> {
     List<UserCustomFieldValue> findByUserUserId(Long userId);
-    List<UserCustomFieldValue> findByUserId(Long userId);
 }
