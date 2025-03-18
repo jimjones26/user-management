@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Service
@@ -100,7 +100,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setStatus(Status.DELETED);
-        user.setDeletedAt(new Timestamp(System.currentTimeMillis()));
+        user.setDeletedAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
