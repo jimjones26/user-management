@@ -11,6 +11,7 @@ import com.uxfx.usermanagement.repository.MFARepository;
 import com.uxfx.usermanagement.repository.UserRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class MFAService {
         this.totpService = totpService;
     }
 
+    @Transactional
     public MFASetupResponse setupMFA(Long userId, String method) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
@@ -59,7 +61,7 @@ public class MFAService {
     public List<String> getBackupCodes(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        List<BackupCode> backupCodes = backupCodeRepository.findByUserUserIdAndUsedFalse(userId);
+        List<BackupCode> backupCodes = backupCodeRepository.findByUserUserIdAndIsUsedFalse(userId);
         return backupCodes.stream().map(BackupCode::getCode).collect(Collectors.toList());
     }
     

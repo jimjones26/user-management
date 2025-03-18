@@ -19,5 +19,5 @@ public class BackupCode {
     private String code;
 
     @Column(name = "is_used", nullable = false)
-    private boolean isUsed;
+    private boolean used;
 }
