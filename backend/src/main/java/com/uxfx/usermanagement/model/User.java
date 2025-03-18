@@ -22,8 +22,8 @@ public class User {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
+    @Column(name = "status", columnDefinition = "user_status", nullable = false)
+    private UserStatus status;
 
     @Column(nullable = false)
     private boolean emailVerified;
@@ -59,8 +59,8 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
+    public UserStatus getStatus() { return status; }
+    public void setStatus(UserStatus status) { this.status = status; }
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
     public boolean isEmailNotifications() { return emailNotifications; }

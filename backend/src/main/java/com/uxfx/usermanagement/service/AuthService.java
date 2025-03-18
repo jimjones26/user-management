@@ -2,6 +2,7 @@ package com.uxfx.usermanagement.service;
 
 import com.uxfx.usermanagement.dto.*;
 import com.uxfx.usermanagement.model.*;
+import com.uxfx.usermanagement.model.UserStatus;
 import com.uxfx.usermanagement.repository.*;
 import com.uxfx.usermanagement.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
@@ -54,7 +55,7 @@ public class AuthService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setStatus(Status.INACTIVE);
+        user.setStatus(UserStatus.PENDING);
         user.setEmailVerified(false);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
@@ -156,7 +157,7 @@ public class AuthService {
         }
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            if (user.getStatus() == Status.ACTIVE) {
+            if (user.getStatus() == UserStatus.ACTIVE) {
                 passwordResetTokenRepository.deleteByUserAndIsUsedFalse(user);
                 String token = UUID.randomUUID().toString();
                 PasswordResetToken resetToken = new PasswordResetToken(user, token);
@@ -176,7 +177,7 @@ public class AuthService {
             throw new RuntimeException("Token expired");
         }
         User user = resetToken.getUser();
-        if (user.getStatus() != Status.ACTIVE) {
+        if (user.getStatus() != UserStatus.ACTIVE) {
             throw new RuntimeException("Cannot reset password for this account");
         }
         String hashedPassword = passwordEncoder.encode(newPassword);
@@ -226,7 +227,7 @@ public class AuthService {
 
         User user = verificationToken.getUser();
         user.setEmailVerified(true);
-        user.setStatus(Status.ACTIVE);
+        user.setStatus(UserStatus.ACTIVE);
         userRepository.save(user);
 
         verificationToken.setUsed(true);
