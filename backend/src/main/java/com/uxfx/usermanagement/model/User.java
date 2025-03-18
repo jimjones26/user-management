@@ -1,7 +1,7 @@
 package com.uxfx.usermanagement.model;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,14 +28,16 @@ public class User {
     @Column(nullable = false)
     private boolean emailVerified;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    // Notification preference fields
+    @Column(nullable = false)
+    private boolean emailNotifications = true;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
+    @Column(nullable = false)
+    private boolean inAppNotifications = true;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date deletedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
     @ManyToMany
     @JoinTable(
@@ -61,12 +63,16 @@ public class User {
     public void setStatus(Status status) { this.status = status; }
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
-    public Date getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
-    public Date getDeletedAt() { return deletedAt; }
-    public void setDeletedAt(Date deletedAt) { this.deletedAt = deletedAt; }
+    public boolean isEmailNotifications() { return emailNotifications; }
+    public void setEmailNotifications(boolean emailNotifications) { this.emailNotifications = emailNotifications; }
+    public boolean isInAppNotifications() { return inAppNotifications; }
+    public void setInAppNotifications(boolean inAppNotifications) { this.inAppNotifications = inAppNotifications; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
     public MFA getMfa() { return mfa; }
