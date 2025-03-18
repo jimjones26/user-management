@@ -1,3 +1,4 @@
+
 package com.uxfx.usermanagement.repository;
 
 import com.uxfx.usermanagement.model.BackupCode;
@@ -15,11 +16,4 @@ public interface BackupCodeRepository extends JpaRepository<BackupCode, Long>, J
      * @return List of unused backup codes
      */
     List<BackupCode> findByUserUserIdAndIsUsedFalse(Long userId);
-    
-    /**
-     * Alternative method name that matches the service call
-     * @param userId the ID of the user
-     * @return List of unused backup codes
-     */
-    List<BackupCode> findByUserUserIdAndUsedFalse(Long userId);
 }
