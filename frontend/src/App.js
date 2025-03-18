@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider, useDispatch } from 'react-redux';
 import store from './store/index';
-import { restoreSession } from './store/actions/authActions';
+import { checkAndRestoreSession } from './store/actions/authActions';
 import NavigationBar from './components/shared/NavigationBar';
 import Footer from './components/shared/Footer';
 import ErrorBoundary from './components/shared/ErrorBoundary';
@@ -22,46 +22,47 @@ import PermissionManagementPage from './pages/admin/PermissionManagementPage';
 import AuditLogPage from './pages/admin/AuditLogPage';
 import UserImportPage from './pages/enterprise/UserImportPage';
 import UserExportPage from './pages/enterprise/UserExportPage';
+import { debugToken } from './utils/tokenDebug';
 
-// AppWrapper component to handle session restoration
-function AppWrapper() {
+function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(restoreSession());
+    console.log('App mounted, checking session...');
+    debugToken.logTokenStatus();
+
+    // Execute the thunk directly
+    dispatch(checkAndRestoreSession());
+    
+    // Log token status after dispatch
+    debugToken.logTokenStatus();
   }, [dispatch]);
 
   return (
-    <ErrorBoundary>
-      <NavigationBar />
-      <Routes>
-        <Route path="/register" element={<RegistrationPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/mfa/setup" element={<MFASetupPage />} />
-        <Route path="/mfa/verify" element={<MFAVerificationPage />} />
-        <Route path="/password-reset/request" element={<PasswordResetRequestPage />} />
-        <Route path="/password-reset" element={<PasswordResetPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/notifications" element={<NotificationPreferencesPage />} />
-        <Route path="/admin/users" element={<UserListPage />} />
-        <Route path="/admin/users/:userId" element={<UserDetailsPage />} />
-        <Route path="/admin/users/:userId/edit" element={<UserEditPage />} />
-        <Route path="/admin/roles" element={<RoleManagementPage />} />
-        <Route path="/admin/permissions" element={<PermissionManagementPage />} />
-        <Route path="/admin/audit-logs" element={<AuditLogPage />} />
-        <Route path="/enterprise/import" element={<UserImportPage />} />
-        <Route path="/enterprise/export" element={<UserExportPage />} />
-      </Routes>
-      <Footer />
-    </ErrorBoundary>
-  );
-}
-
-function App() {
-  return (
     <Provider store={store}>
       <Router>
-        <AppWrapper />
+        <ErrorBoundary>
+          <NavigationBar />
+          <Routes>
+            <Route path="/register" element={<RegistrationPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/mfa/setup" element={<MFASetupPage />} />
+            <Route path="/mfa/verify" element={<MFAVerificationPage />} />
+            <Route path="/password-reset/request" element={<PasswordResetRequestPage />} />
+            <Route path="/password-reset" element={<PasswordResetPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/notifications" element={<NotificationPreferencesPage />} />
+            <Route path="/admin/users" element={<UserListPage />} />
+            <Route path="/admin/users/:userId" element={<UserDetailsPage />} />
+            <Route path="/admin/users/:userId/edit" element={<UserEditPage />} />
+            <Route path="/admin/roles" element={<RoleManagementPage />} />
+            <Route path="/admin/permissions" element={<PermissionManagementPage />} />
+            <Route path="/admin/audit-logs" element={<AuditLogPage />} />
+            <Route path="/enterprise/import" element={<UserImportPage />} />
+            <Route path="/enterprise/export" element={<UserExportPage />} />
+          </Routes>
+          <Footer />
+        </ErrorBoundary>
       </Router>
     </Provider>
   );
