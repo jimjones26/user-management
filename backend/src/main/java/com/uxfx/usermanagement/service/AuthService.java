@@ -270,4 +270,22 @@ public class AuthService {
         verificationToken.setUsed(true);
         emailVerificationTokenRepository.save(verificationToken);
     }
+    
+    /**
+     * Gets the current user based on the provided token
+     * @param token the JWT token
+     * @return the user associated with the token
+     */
+    public User getCurrentUser(String token) {
+        // Validate token
+        Claims claims = jwtTokenProvider.validateToken(token);
+        if (claims == null) {
+            throw new RuntimeException("Invalid or expired token");
+        }
+
+        // Get user from database
+        String username = claims.getSubject();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 }

@@ -21,6 +21,16 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @GetMapping("/users/me")
+    public ResponseEntity<UserDTO> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String token = authHeader.substring(7);
+        UserDTO user = authService.getCurrentUser(token);
+        return ResponseEntity.ok(user);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request, BindingResult bindingResult) {
         logger.info("Registration request received for user: {}", request.getEmail());
