@@ -7,6 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @RestController
 @RequestMapping("/auth")
@@ -19,10 +22,27 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request, BindingResult bindingResult) {
         logger.info("Registration request received for user: {}", request.getEmail());
-        authService.register(request);
-        return ResponseEntity.ok("Registration successful. Please check your email to verify.");
+        
+        // Validation check
+        if (bindingResult.hasErrors()) {
+            logger.error("Validation failed for registration request: {}", bindingResult.getAllErrors());
+            return ResponseEntity
+                .badRequest()
+                .body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+
+        try {
+            authService.register(request);
+            logger.info("Registration successful for user: {}", request.getEmail());
+            return ResponseEntity.ok("Registration successful. Please check your email to verify.");
+        } catch (Exception e) {
+            logger.error("Registration failed for user: {}", request.getEmail(), e);
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+        }
     }
 
     @PostMapping("/login")
