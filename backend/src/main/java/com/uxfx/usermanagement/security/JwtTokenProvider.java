@@ -24,6 +24,9 @@ public class JwtTokenProvider {
     
     @Value("${jwt.refresh.expiration}")
     private long refreshExpiration;
+    
+    @Value("${jwt.temp.expiration:300000}") // 5 minutes default
+    private long tempTokenExpiration;
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Base64.getEncoder().encode(jwtSecret.getBytes(StandardCharsets.UTF_8));
@@ -67,6 +70,25 @@ public class JwtTokenProvider {
         }
     }
 
+    public String generateTempToken(User user) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + tempTokenExpiration);
+
+        try {
+            return Jwts.builder()
+                    .setSubject(user.getUsername())
+                    .claim("userId", user.getUserId())
+                    .claim("type", "temp")
+                    .setIssuedAt(now)
+                    .setExpiration(expiryDate)
+                    .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                    .compact();
+        } catch (Exception e) {
+            logger.error("Error generating temporary token", e);
+            throw new RuntimeException("Could not generate temporary token");
+        }
+    }
+
     public Claims validateToken(String token) {
         try {
             return Jwts.parserBuilder()
@@ -81,6 +103,14 @@ public class JwtTokenProvider {
             logger.error("Invalid JWT token: {}", e.getMessage());
             throw new RuntimeException("Invalid JWT token");
         }
+    }
+
+    public Claims validateTempToken(String token) {
+        Claims claims = validateToken(token);
+        if (!"temp".equals(claims.get("type"))) {
+            throw new RuntimeException("Invalid temporary token type");
+        }
+        return claims;
     }
 
     private String sanitizeToken(String token) {
