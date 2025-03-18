@@ -22,7 +22,7 @@ public class User {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", columnDefinition = "user_status", nullable = false)
+    @Column(nullable = false)
     private UserStatus status;
 
     @Column(nullable = false)
