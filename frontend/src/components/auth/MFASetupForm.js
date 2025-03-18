@@ -4,7 +4,7 @@ import * as Yup from 'yup';
 import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setupMFA, verifyMFA } from '../../store/actions/authActions';
-import QRCode from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 
 const validationSchemaStep1 = Yup.object({
@@ -94,7 +94,7 @@ function MFASetupForm() {
           {formikStep1.values.method === 'totp' && totpSecret && (
             <>
               <Typography>Scan this QR code:</Typography>
-              <QRCode value={`otpauth://totp/UserManagementSystem?secret=${totpSecret}`} />
+              <QRCodeCanvas value={`otpauth://totp/UserManagementSystem?secret=${totpSecret}`} />
             </>
           )}
           <form onSubmit={formikStep2.handleSubmit} style={{ marginTop: '16px' }}>
