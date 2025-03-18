@@ -4,12 +4,12 @@ import com.uxfx.usermanagement.dto.MFASetupResponse;
 import com.uxfx.usermanagement.exception.ResourceNotFoundException;
 import com.uxfx.usermanagement.model.BackupCode;
 import com.uxfx.usermanagement.model.MFA;
+import com.uxfx.usermanagement.model.MFAMethod;
 import com.uxfx.usermanagement.model.User;
 import com.uxfx.usermanagement.repository.BackupCodeRepository;
 import com.uxfx.usermanagement.repository.MFARepository;
 import com.uxfx.usermanagement.repository.UserRepository;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,17 +17,20 @@ import java.util.stream.Collectors;
 
 @Service
 public class MFAService {
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private MFARepository mfaRepository;
-
-    @Autowired
-    private BackupCodeRepository backupCodeRepository;
-
-    @Autowired
-    private TOTPService totpService;
+    private final UserRepository userRepository;
+    private final MFARepository mfaRepository;
+    private final BackupCodeRepository backupCodeRepository;
+    private final TOTPService totpService;
+    
+    public MFAService(UserRepository userRepository,
+                     MFARepository mfaRepository,
+                     BackupCodeRepository backupCodeRepository,
+                     TOTPService totpService) {
+        this.userRepository = userRepository;
+        this.mfaRepository = mfaRepository;
+        this.backupCodeRepository = backupCodeRepository;
+        this.totpService = totpService;
+    }
 
     public MFASetupResponse setupMFA(Long userId, String method) {
         User user = userRepository.findById(userId)
@@ -37,16 +40,16 @@ public class MFAService {
         }
         MFA mfa = new MFA();
         mfa.setUser(user);
-        mfa.setMethod(method);
+        mfa.setMethod(MFAMethod.valueOf(method.toUpperCase()));
         String secret = null;
-        if ("totp".equalsIgnoreCase(method)) {
+        if (MFAMethod.TOTP.name().equalsIgnoreCase(method)) {
             secret = totpService.generateSecret();
             mfa.setSecret(secret);
-        } else if ("sms".equalsIgnoreCase(method)) {
+        } else if (MFAMethod.SMS.name().equalsIgnoreCase(method)) {
             // SMS setup requires phone number; assume set elsewhere or extend request
             throw new UnsupportedOperationException("SMS MFA not implemented yet");
         }
-        mfa.setIsVerified(false);
+        mfa.setVerified(false);
         mfaRepository.save(mfa);
 
         List<String> backupCodes = generateBackupCodes(user);
@@ -67,7 +70,7 @@ public class MFAService {
             BackupCode backupCode = new BackupCode();
             backupCode.setUser(user);
             backupCode.setCode(code);
-            backupCode.setIsUsed(false);
+            backupCode.setUsed(false);
             backupCodeRepository.save(backupCode);
             codes.add(code);
         }
