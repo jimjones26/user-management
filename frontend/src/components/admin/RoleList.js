@@ -24,7 +24,6 @@ function RoleList() {
     <Table>
       <TableHead>
         <TableRow>
-          <TableCell>ID</TableCell>
           <TableCell>Name</TableCell>
           <TableCell>Description</TableCell>
           <TableCell>Actions</TableCell>
@@ -32,12 +31,17 @@ function RoleList() {
       </TableHead>
       <TableBody>
         {roles.map((role) => (
-          <TableRow key={role.role_id}>
-            <TableCell>{role.role_id}</TableCell>
+          <TableRow key={role.id}>
             <TableCell>{role.name}</TableCell>
             <TableCell>{role.description}</TableCell>
             <TableCell>
-              <Button onClick={() => navigate(`/admin/roles/${role.role_id}/edit`)}>Edit</Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => navigate(`/admin/roles/${role.id}/edit`)}
+              >
+                Edit
+              </Button>
             </TableCell>
           </TableRow>
         ))}
