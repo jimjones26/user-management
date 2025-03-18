@@ -17,36 +17,30 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const formik = useFormik({
-    initialValues: { username: '', password: '' },
+    initialValues: {
+      username: '',
+      password: ''
+    },
     validationSchema,
     onSubmit: async (values) => {
-      console.log('Login attempt with username:', values.username); // Debug log
       setIsLoading(true);
-
       try {
+        // Dispatch returns a Promise when using redux-thunk
         const result = await dispatch(loginUser(values));
-        console.log('Login response:', result); // Debug log
-
         if (result?.type === 'LOGIN_SUCCESS') {
           navigate('/profile');
         }
       } catch (error) {
-        console.error('Login error:', error); // Debug log
+        console.error('Login error:', error);
       } finally {
         setIsLoading(false);
       }
-    },
+    }
   });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form submitted'); // Debug log
-    formik.handleSubmit(e);
-  };
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={formik.handleSubmit}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -58,6 +52,7 @@ function LoginForm() {
     >
       <TextField
         fullWidth
+        id="username"
         name="username"
         label="Username"
         value={formik.values.username}
@@ -66,9 +61,11 @@ function LoginForm() {
         error={formik.touched.username && Boolean(formik.errors.username)}
         helperText={formik.touched.username && formik.errors.username}
         disabled={isLoading}
+        margin="normal"
       />
       <TextField
         fullWidth
+        id="password"
         name="password"
         label="Password"
         type="password"
@@ -78,15 +75,17 @@ function LoginForm() {
         error={formik.touched.password && Boolean(formik.errors.password)}
         helperText={formik.touched.password && formik.errors.password}
         disabled={isLoading}
+        margin="normal"
       />
       <Button
+        fullWidth
         type="submit"
         variant="contained"
         color="primary"
         disabled={isLoading || !formik.isValid}
-        startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
+        sx={{ mt: 2 }}
       >
-        {isLoading ? 'Logging in...' : 'Login'}
+        {isLoading ? <CircularProgress size={24} /> : 'Login'}
       </Button>
     </form>
   );
