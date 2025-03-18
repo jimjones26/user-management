@@ -1,12 +1,13 @@
 package com.uxfx.usermanagement.model;
 
 import javax.persistence.*;
+import lombok.Data;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "permission")
-
+@Data
 public class Permission {
 
     @Id
