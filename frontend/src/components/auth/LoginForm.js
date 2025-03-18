@@ -25,9 +25,10 @@ function LoginForm() {
     onSubmit: async (values) => {
       setIsLoading(true);
       try {
-        // Dispatch returns a Promise when using redux-thunk
         const result = await dispatch(loginUser(values));
-        if (result?.type === 'LOGIN_SUCCESS') {
+        console.log('Login result:', result); // Debug log
+        
+        if (result.success) {
           navigate('/profile');
         }
       } catch (error) {

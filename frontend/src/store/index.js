@@ -4,18 +4,25 @@ import thunk from 'redux-thunk';
 import authReducer from './reducers/authReducer';
 import userReducer from './reducers/userReducer';
 
-// Root reducer combining all reducers
-const rootReducer = combineReducers({
-  auth: authReducer,
-  user: userReducer
-});
+// Create and export the store setup function
+const configureStore = () => {
+  const rootReducer = combineReducers({
+    auth: authReducer,
+    user: userReducer
+  });
 
-// Create store with middleware
-const store = createStore(
-  rootReducer,
-  composeWithDevTools(
-    applyMiddleware(thunk)
-  )
-);
+  // Explicitly apply thunk middleware first
+  const middlewares = [thunk];
+  
+  const store = createStore(
+    rootReducer,
+    composeWithDevTools(applyMiddleware(...middlewares))
+  );
+
+  return store;
+};
+
+// Create and export the store instance
+const store = configureStore();
 
 export default store;
