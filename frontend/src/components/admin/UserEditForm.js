@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { TextField, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Typography,
+  Box
+} from '@mui/material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -29,7 +38,15 @@ function UserEditForm({ userId }) {
   }, [userId]);
 
   const formik = useFormik({
-    initialValues: user ? { username: user.username, email: user.email, status: user.status } : { username: '', email: '', status: '' },
+    initialValues: user ? {
+      username: user.username,
+      email: user.email,
+      status: user.status
+    } : {
+      username: '',
+      email: '',
+      status: ''
+    },
     validationSchema,
     enableReinitialize: true,
     onSubmit: async (values) => {
@@ -46,8 +63,19 @@ function UserEditForm({ userId }) {
   if (!user) return <Typography>Loading...</Typography>;
 
   return (
-    <form onSubmit={formik.handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Box
+      component="form"
+      onSubmit={formik.handleSubmit}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        maxWidth: '600px',
+        margin: '0 auto'
+      }}
+    >
       <TextField
+        fullWidth
         name="username"
         label="Username"
         value={formik.values.username}
@@ -57,6 +85,7 @@ function UserEditForm({ userId }) {
         helperText={formik.touched.username && formik.errors.username}
       />
       <TextField
+        fullWidth
         name="email"
         label="Email"
         type="email"
@@ -66,22 +95,28 @@ function UserEditForm({ userId }) {
         error={formik.touched.email && Boolean(formik.errors.email)}
         helperText={formik.touched.email && formik.errors.email}
       />
-      <FormControl>
-        <InputLabel>Status</InputLabel>
+      <FormControl fullWidth>
+        <InputLabel id="status-label">Status</InputLabel>
         <Select
+          labelId="status-label"
           name="status"
           value={formik.values.status}
           onChange={formik.handleChange}
+          label="Status"
         >
           <MenuItem value="active">Active</MenuItem>
           <MenuItem value="inactive">Inactive</MenuItem>
           <MenuItem value="deleted">Deleted</MenuItem>
         </Select>
       </FormControl>
-      <Button type="submit" variant="contained" color="primary">
+      <Button
+        type="submit"
+        variant="contained"
+        sx={{ mt: 2 }}
+      >
         Save
       </Button>
-    </form>
+    </Box>
   );
 }
 
