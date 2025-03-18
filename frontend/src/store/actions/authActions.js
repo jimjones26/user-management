@@ -15,15 +15,26 @@ export const registerUser = (userData) => async (dispatch) => {
 };
 
 export const loginUser = (credentials) => async (dispatch) => {
+  console.log('loginUser action called with:', credentials); // Debug log
+  
   dispatch({ type: 'LOGIN_REQUEST' });
+  
   try {
+    console.log('Making API request to /auth/login'); // Debug log
     const response = await api.post('/auth/login', credentials);
+    console.log('Login API response:', response); // Debug log
+    
     dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
     toast.success('Login successful!');
+    
+    return { type: 'LOGIN_SUCCESS', payload: response.data };
   } catch (error) {
+    console.error('Login error details:', error.response || error); // Debug log
     const message = error.response?.data?.message || 'Login failed';
     dispatch({ type: 'LOGIN_FAILURE', payload: message });
     toast.error(message);
+    
+    throw error;
   }
 };
 
