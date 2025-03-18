@@ -1,10 +1,10 @@
-import axios from 'axios';
 import { toast } from 'react-toastify';
+import api from '../../services/api';
 
 export const registerUser = (userData) => async (dispatch) => {
   dispatch({ type: 'REGISTER_REQUEST' });
   try {
-    const response = await axios.post('/api/register', userData);
+    const response = await api.post('/auth/register', userData);
     dispatch({ type: 'REGISTER_SUCCESS', payload: response.data });
     toast.success('Registration successful! Please check your email.');
   } catch (error) {
@@ -17,7 +17,7 @@ export const registerUser = (userData) => async (dispatch) => {
 export const loginUser = (credentials) => async (dispatch) => {
   dispatch({ type: 'LOGIN_REQUEST' });
   try {
-    const response = await axios.post('/api/login', credentials);
+    const response = await api.post('/auth/login', credentials);
     dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
     toast.success('Login successful!');
   } catch (error) {
@@ -30,7 +30,7 @@ export const loginUser = (credentials) => async (dispatch) => {
 export const setupMFA = (mfaData) => async (dispatch) => {
   dispatch({ type: 'MFA_SETUP_REQUEST' });
   try {
-    const response = await axios.post('/api/mfa/setup', mfaData);
+    const response = await api.post('/auth/mfa/setup', mfaData);
     dispatch({ type: 'MFA_SETUP_SUCCESS', payload: response.data });
     toast.success('MFA setup initiated. Please verify your code.');
   } catch (error) {
@@ -42,7 +42,7 @@ export const setupMFA = (mfaData) => async (dispatch) => {
 
 export const verifyMFA = (code) => async (dispatch) => {
   try {
-    const response = await axios.post('/api/mfa/verify', { code });
+    const response = await api.post('/auth/mfa/verify', { code });
     dispatch({ type: 'MFA_VERIFY_SUCCESS', payload: response.data });
     toast.success('MFA verified successfully.');
   } catch (error) {
@@ -54,7 +54,7 @@ export const verifyMFA = (code) => async (dispatch) => {
 
 export const logout = () => async (dispatch) => {
   try {
-    await axios.post('/api/logout');
+    await api.post('/auth/logout');
     dispatch({ type: 'LOGOUT' });
     toast.success('Logged out successfully.');
   } catch (error) {
